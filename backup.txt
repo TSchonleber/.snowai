@@ -9,38 +9,18 @@ import requests
 import base64
 import tiktoken
 
-<<<<<<< HEAD
 # Load environment variables
 load_dotenv()
-=======
-# Use an environment variable for the API key
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("Please set the OPENAI_API_KEY environment variable")
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 # Use environment variables for API keys
 openai_api_key = os.getenv("OPENAI_API_KEY")
 fal_key = os.getenv("FAL_KEY")
 
-<<<<<<< HEAD
 if not openai_api_key:
     raise ValueError("Please set the OPENAI_API_KEY environment variable")
 if not fal_key:
     raise ValueError("FAL_KEY not found in environment variables")
 print(f"FAL_KEY found: {'*' * len(fal_key)}")
-=======
-# Model information including pricing (approximate, may need updating)
-MODEL_INFO = {
-    "gpt-4": {"price_per_1k_tokens": 0.03, "quality": 10},
-    "gpt-4-turbo-preview": {"price_per_1k_tokens": 0.01, "quality": 9},
-    "gpt-3.5-turbo": {"price_per_1k_tokens": 0.0015, "quality": 7},
-    "gpt-3.5-turbo-16k": {"price_per_1k_tokens": 0.003, "quality": 7},
-    "dall-e-3": {"price": 0.04, "quality": 10},  # Price per image (1024x1024)
-    "text-embedding-3-small": {"price_per_1k_tokens": 0.00002, "quality": 8},
-    "text-embedding-3-large": {"price_per_1k_tokens": 0.00013, "quality": 10},
-}
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 client = OpenAI(api_key=openai_api_key)
 
@@ -150,7 +130,6 @@ def generate_image(prompt, model):
 css = """
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-<<<<<<< HEAD
 body {
     background-color: #000000;
     color: #00ffff;
@@ -161,15 +140,6 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
-=======
-    with gr.Row():
-        model_dropdown = gr.Dropdown(
-            choices=["gpt-4", "gpt-4-turbo-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "dall-e-3"],
-            value="gpt-3.5-turbo",
-            label="Select Model"
-        )
-        submit_btn = gr.Button("Submit")
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 #app-container {
     display: flex;
