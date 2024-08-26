@@ -9,52 +9,45 @@ import requests
 import base64
 import tiktoken
 
-<<<<<<< HEAD
 # Load environment variables
 load_dotenv()
-=======
-# Use an environment variable for the API key
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("Please set the OPENAI_API_KEY environment variable")
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 # Use environment variables for API keys
 openai_api_key = os.getenv("OPENAI_API_KEY")
 fal_key = os.getenv("FAL_KEY")
 
-<<<<<<< HEAD
 if not openai_api_key:
     raise ValueError("Please set the OPENAI_API_KEY environment variable")
 if not fal_key:
     raise ValueError("FAL_KEY not found in environment variables")
 print(f"FAL_KEY found: {'*' * len(fal_key)}")
-=======
-# Model information including pricing (approximate, may need updating)
-MODEL_INFO = {
-    "gpt-4": {"price_per_1k_tokens": 0.03, "quality": 10},
-    "gpt-4-turbo-preview": {"price_per_1k_tokens": 0.01, "quality": 9},
-    "gpt-3.5-turbo": {"price_per_1k_tokens": 0.0015, "quality": 7},
-    "gpt-3.5-turbo-16k": {"price_per_1k_tokens": 0.003, "quality": 7},
-    "dall-e-3": {"price": 0.04, "quality": 10},  # Price per image (1024x1024)
-    "text-embedding-3-small": {"price_per_1k_tokens": 0.00002, "quality": 8},
-    "text-embedding-3-large": {"price_per_1k_tokens": 0.00013, "quality": 10},
-}
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 client = OpenAI(api_key=openai_api_key)
 
-def generate_image_fal(prompt):
-    print(f"Attempting to generate image with FAL AI. Prompt: {prompt}")
+def generate_image_fal(prompt, fal_model):
+    print(f"Attempting to generate image with FAL AI. Model: {fal_model}, Prompt: {prompt}")
+    
+    # Set max_steps based on the model
+    if fal_model == "fal-ai/flux/schnell":
+        max_steps = 8
+    elif fal_model == "fal-ai/stable-diffusion-v3-medium":
+        max_steps = 30
+    elif fal_model == "fal-ai/flux-realism":
+        max_steps = 40
+    else:  # fal-ai/flux (dev)
+        max_steps = 35
+    
     try:
         handler = fal_client.submit(
-            "fal-ai/flux-lora",
+            fal_model,
             arguments={
                 "prompt": prompt,
                 "image_size": "landscape_16_9",
-                "num_inference_steps": 28,
-                "num_images": 1
-            }
+                "num_inference_steps": max_steps,
+                "guidance_scale": 7.5,
+                "enable_safety_checker": False
+            },
+            
         )
         result = handler.get()
         image_url = result['images'][0]['url']
@@ -66,6 +59,7 @@ def generate_image_fal(prompt):
         return f"data:image/png;base64,{img_str}"
     except Exception as e:
         print(f"Error generating image with FAL AI: {str(e)}")
+        print(f"Full error details: {e.response.text if hasattr(e, 'response') else 'No additional details'}")
         return None
 
 def generate_image_openai(prompt):
@@ -133,8 +127,16 @@ def text_chat(message, history, model):
 
 def generate_image(prompt, model):
     print(f"generate_image called with prompt: '{prompt}', model: '{model}'")
-    if model == "fal-ai":
-        image_data = generate_image_fal(prompt)
+    if model.startswith("fal-"):
+        if model == "fal-flux-dev1":
+            fal_model = "fal-ai/flux"
+        elif model == "fal-flux-schnell":
+            fal_model = "fal-ai/flux/schnell"
+        elif model == "fal-sd-v3-medium":
+            fal_model = "fal-ai/stable-diffusion-v3-medium"
+        elif model == "fal-flux-realism":
+            fal_model = "fal-ai/flux-realism"
+        image_data = generate_image_fal(prompt, fal_model)
     else:  # DALL-E
         image_data = generate_image_openai(prompt)
     
@@ -150,7 +152,6 @@ def generate_image(prompt, model):
 css = """
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-<<<<<<< HEAD
 body {
     background-color: #000000;
     color: #00ffff;
@@ -161,15 +162,6 @@ body {
     flex-direction: column;
     min-height: 100vh;
 }
-=======
-    with gr.Row():
-        model_dropdown = gr.Dropdown(
-            choices=["gpt-4", "gpt-4-turbo-preview", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "dall-e-3"],
-            value="gpt-3.5-turbo",
-            label="Select Model"
-        )
-        submit_btn = gr.Button("Submit")
->>>>>>> parent of 9994b3d (Update gpt4_chatbot.py)
 
 #app-container {
     display: flex;
@@ -355,7 +347,7 @@ with gr.Blocks(css=css, theme=gr.themes.Base()) as iface:
                 with gr.Row(elem_id="image-prompt-row"):
                     image_prompt = gr.Textbox(placeholder="Enter image prompt here...", label="Image Prompt", elem_id="image-prompt")
                     image_model = gr.Dropdown(
-                        choices=["dall-e-3", "fal-ai"],
+                        choices=["dall-e-3", "fal-flux-dev1", "fal-flux-schnell", "fal-sd-v3-medium", "fal-flux-realism"],
                         label="Model",
                         value="dall-e-3",
                         elem_id="image-model"
